@@ -1,0 +1,508 @@
+:root {
+  --bg: #f6f2e9;
+  --surface: #fffdf8;
+  --surface-muted: #f1ebdd;
+  --text: #1d2433;
+  --text-muted: #5b6273;
+  --border: #e3d9c4;
+  --border-strong: #cbbd9f;
+  --primary: #1f3a68;
+  --primary-hover: #172d52;
+  --on-primary: #ffffff;
+  --gold: #a8741f;
+  --gold-soft: #e9c77b;
+  --halacha-bg: #e4ebf7;
+  --halacha-text: #1f3a68;
+  --torah-bg: #f6e8cc;
+  --torah-text: #77511a;
+  --success: #2e6b3d;
+  --success-bg: #e2f0e4;
+  --danger: #a3302a;
+  --danger-bg: #f8e3e1;
+  --focus: #3c6fd9;
+  --shadow: 0 1px 2px rgb(29 36 51 / 0.05), 0 10px 30px rgb(29 36 51 / 0.06);
+  --radius: 14px;
+  --font-serif: 'Frank Ruhl Libre', Georgia, 'Times New Roman', serif;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141922;
+    --surface: #1c2330;
+    --surface-muted: #232b3a;
+    --text: #ece7dc;
+    --text-muted: #a3a9b6;
+    --border: #2f3846;
+    --border-strong: #46505f;
+    --primary: #8fb0eb;
+    --primary-hover: #a9c3f2;
+    --on-primary: #111723;
+    --gold: #e0b45f;
+    --halacha-bg: #22324f;
+    --halacha-text: #b9cdf3;
+    --torah-bg: #3d3020;
+    --torah-text: #ecc982;
+    --success: #8fd19e;
+    --success-bg: #1f3526;
+    --danger: #f19a92;
+    --danger-bg: #3d2222;
+    --focus: #8fb0eb;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px rgb(0 0 0 / 0.25);
+    color-scheme: dark;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0;
+}
+
+h1 { font-size: clamp(2rem, 5vw, 2.6rem); letter-spacing: -0.01em; }
+h2 { font-size: 1.5rem; }
+
+a { color: var(--primary); }
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Header & footer */
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 16px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.brand-mark { width: 34px; height: 34px; flex: none; }
+.brand-mark rect { fill: var(--primary); }
+.brand-mark path {
+  fill: none;
+  stroke: var(--gold-soft);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (prefers-color-scheme: dark) {
+  .brand-mark rect { fill: #2a477a; }
+}
+
+.site-header nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 0.95rem;
+}
+
+.site-header nav a { color: var(--text-muted); text-decoration: none; font-weight: 500; }
+.site-header nav a:hover { color: var(--text); }
+
+.link-button {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.link-button:hover { color: var(--text); }
+
+.site-footer {
+  margin-top: auto;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+/* Page layout */
+
+.page {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px 16px;
+}
+
+.page:has(.board:not([hidden])) { max-width: 960px; }
+
+.intro { margin-bottom: 28px; }
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--gold);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lede {
+  margin: 12px 0 0;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 28px;
+}
+
+@media (max-width: 560px) {
+  .card { padding: 20px; }
+}
+
+/* Forms */
+
+.field { margin-bottom: 20px; min-width: 0; }
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 560px) {
+  .field-row { grid-template-columns: 1fr; gap: 0; }
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.optional {
+  margin-left: 4px;
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+textarea { resize: vertical; min-height: 140px; }
+
+input::placeholder, textarea::placeholder { color: var(--text-muted); opacity: 0.8; }
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 25%, transparent);
+}
+
+.hint {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.form-error {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-weight: 500;
+}
+
+/* Buttons */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.button:hover { background: var(--surface-muted); }
+.button:disabled { opacity: 0.6; cursor: default; }
+
+.button.primary {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.button.primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+
+#ask-form .button.primary,
+#login-form .button.primary { width: 100%; padding: 13px 18px; font-size: 1.05rem; }
+
+.button.small { padding: 6px 12px; font-size: 0.875rem; border-radius: 8px; }
+
+.button.danger { color: var(--danger); }
+.button.danger:hover { background: var(--danger-bg); border-color: var(--danger); }
+
+/* Thank-you message */
+
+.thanks { text-align: center; padding: 40px 28px; }
+.thanks:focus { outline: none; }
+.thanks p { margin: 10px 0 24px; color: var(--text-muted); }
+
+.thanks-icon {
+  width: 52px;
+  height: 52px;
+  margin-bottom: 14px;
+  padding: 12px;
+  border-radius: 50%;
+  background: var(--success-bg);
+  fill: none;
+  stroke: var(--success);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Teacher sign-in */
+
+.login { max-width: 440px; margin: 24px auto 0; }
+.login h1 { font-size: 1.75rem; margin-bottom: 24px; }
+
+/* Teacher board */
+
+.board-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.tabs {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+}
+
+.tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.tabs button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgb(29 36 51 / 0.12);
+}
+
+.count {
+  min-width: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--border);
+  font-size: 0.78rem;
+  line-height: 20px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabs button[data-status="new"][aria-pressed="true"] .count {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.filters { display: flex; gap: 10px; flex: 1; justify-content: flex-end; min-width: 0; }
+.filters select { width: auto; max-width: 200px; }
+.filters input { max-width: 240px; }
+
+@media (max-width: 680px) {
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .tabs { width: 100%; }
+  .tabs button { flex: 1; justify-content: center; padding: 7px 8px; }
+  .filters { flex-direction: column; }
+  .filters select, .filters input { max-width: none; width: 100%; }
+}
+
+.question-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.question {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 20px;
+}
+
+.question.is-answered { border-left-color: var(--success); }
+.question.is-answered .question-text { color: var(--text-muted); }
+
+.question-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 10px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.chip {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+.chip-halacha { background: var(--halacha-bg); color: var(--halacha-text); }
+.chip-torah { background: var(--torah-bg); color: var(--torah-text); }
+
+.status {
+  margin-left: auto;
+  font-weight: 600;
+  color: var(--gold);
+}
+.is-answered .status { color: var(--success); }
+
+.question-text {
+  margin: 0;
+  font-size: 1.08rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.question-source {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  font-style: italic;
+  overflow-wrap: anywhere;
+}
+
+.question-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.asker { font-weight: 600; font-size: 0.92rem; overflow-wrap: anywhere; }
+.asker.is-anonymous { color: var(--text-muted); font-style: italic; font-weight: 500; }
+
+.actions { display: flex; gap: 8px; }
+
+.empty {
+  padding: 48px 16px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.updated {
+  margin: 16px 0 0;
+  text-align: right;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}

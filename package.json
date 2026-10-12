@@ -1,0 +1,18 @@
+{
+  "name": "torah-tech-questions",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A question box where Torah Tech students send halacha and Torah questions to their teachers.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22.9"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

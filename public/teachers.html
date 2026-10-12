@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Question Board · Torah Tech</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <script src="teachers.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8"/><path d="M16 10.5c-1.9-1.6-4.6-2.4-8-2.4H6.5v14.6H8c3.4 0 6.1.8 8 2.4 1.9-1.6 4.6-2.4 8-2.4h1.5V8.1H24c-3.4 0-6.1.8-8 2.4zM16 10.5v14.6"/></svg>
+      <span>Torah Tech</span>
+    </a>
+    <nav>
+      <a href="/">Student page</a>
+      <button type="button" id="logout" class="link-button" hidden>Sign out</button>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section id="login" class="card login" hidden>
+      <p class="eyebrow">Teachers only</p>
+      <h1>Sign in to the question board</h1>
+      <form id="login-form">
+        <div class="field">
+          <label for="password">Teacher password</label>
+          <input type="password" id="password" name="password" required autocomplete="current-password">
+        </div>
+        <p id="login-error" class="form-error" role="alert" hidden></p>
+        <button type="submit" class="button primary">Sign in</button>
+      </form>
+    </section>
+
+    <section id="board" class="board" hidden>
+      <div class="board-head">
+        <div>
+          <p class="eyebrow">Teacher question board</p>
+          <h1>Student questions</h1>
+        </div>
+        <button type="button" id="refresh" class="button">Refresh</button>
+      </div>
+
+      <div class="toolbar">
+        <div class="tabs" role="group" aria-label="Show questions">
+          <button type="button" data-status="new" aria-pressed="true">New <span class="count" data-count="new">0</span></button>
+          <button type="button" data-status="answered" aria-pressed="false">Answered <span class="count" data-count="answered">0</span></button>
+          <button type="button" data-status="all" aria-pressed="false">All <span class="count" data-count="all">0</span></button>
+        </div>
+        <div class="filters">
+          <label class="visually-hidden" for="filter-topic">Topic</label>
+          <select id="filter-topic">
+            <option value="">All topics</option>
+          </select>
+          <label class="visually-hidden" for="filter-search">Search</label>
+          <input type="search" id="filter-search" placeholder="Search questions" dir="auto">
+        </div>
+      </div>
+
+      <p id="board-error" class="form-error" role="alert" hidden></p>
+      <ol id="question-list" class="question-list"></ol>
+      <p id="empty" class="empty" hidden></p>
+      <p id="updated" class="updated" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <template id="question-template">
+    <li class="question">
+      <div class="question-meta">
+        <span class="chip"></span>
+        <time></time>
+        <span class="status"></span>
+      </div>
+      <p class="question-text" dir="auto"></p>
+      <p class="question-source" dir="auto"></p>
+      <div class="question-foot">
+        <span class="asker" dir="auto"></span>
+        <div class="actions">
+          <button type="button" class="button small toggle"></button>
+          <button type="button" class="button small danger delete">Delete</button>
+        </div>
+      </div>
+    </li>
+  </template>
+</body>
+</html>
