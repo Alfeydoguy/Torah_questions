@@ -1,13 +1,13 @@
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
+import { formatCode, hashCode, newCode, normalizeCode } from './codes.js';
 import { createStore } from './store.js';
 import { TOPIC_GROUPS, isTopic } from './topics.js';
 
 const PUBLIC_DIR = fileURLToPath(new URL('../public/', import.meta.url));
 const SESSION_COOKIE = 'tt_teacher';
 const SESSION_MS = 12 * 60 * 60 * 1000;
-const STATUSES = ['new', 'answered'];
 
 // Longest allowed value for each text field a student can fill in.
 const FIELDS = {
@@ -16,6 +16,11 @@ const FIELDS = {
   name: { label: 'Name', max: 80 },
   className: { label: 'Class', max: 40 },
 };
+const ANSWER_MAX = 6000;
+const ANSWERED_BY_MAX = 80;
+
+// What a question looks like once it's back to waiting for an answer.
+const UNANSWERED = { status: 'new', answer: '', answeredBy: '', answeredAt: null };
 
 export function createApp({ dataFile, teacherPassword, sessionSecret, trustProxy = false }) {
   if (!teacherPassword) throw new Error('A teacher password is required.');
@@ -24,6 +29,7 @@ export function createApp({ dataFile, teacherPassword, sessionSecret, trustProxy
   const store = createStore(dataFile);
   const submitLimiter = createRateLimiter({ max: 60, windowMs: 5 * 60 * 1000 });
   const loginLimiter = createRateLimiter({ max: 10, windowMs: 15 * 60 * 1000 });
+  const lookupLimiter = createRateLimiter({ max: 30, windowMs: 15 * 60 * 1000 });
 
   const sign = (value) => crypto.createHmac('sha256', sessionSecret).update(value).digest('base64url');
 
@@ -43,13 +49,15 @@ export function createApp({ dataFile, teacherPassword, sessionSecret, trustProxy
   if (trustProxy) app.set('trust proxy', 1);
 
   app.use(securityHeaders);
-  app.use(express.json({ limit: '20kb' }));
+  app.use(express.json({ limit: '32kb' }));
   app.use(express.static(PUBLIC_DIR, { extensions: ['html'] }));
 
   app.get('/api/topics', (req, res) => {
     res.json(TOPIC_GROUPS);
   });
 
+  // Students: send a question. The reply includes the student's question
+  // code; sending it back with later questions keeps them all together.
   app.post('/api/questions', (req, res) => {
     if (submitLimiter.isLimited(req.ip)) {
       return res.status(429).json({ error: 'Too many questions were sent from this connection. Please wait a few minutes and try again.' });
@@ -62,9 +70,27 @@ export function createApp({ dataFile, teacherPassword, sessionSecret, trustProxy
     const { value, error } = parseSubmission(body);
     if (error) return res.status(400).json({ error });
 
+    const code = normalizeCode(body.code) ?? newCode();
     submitLimiter.hit(req.ip);
-    store.add(value);
-    res.status(201).json({ ok: true });
+    store.add({ ...value, ...UNANSWERED, codeHash: hashCode(code) });
+    res.status(201).json({ ok: true, code: formatCode(code) });
+  });
+
+  // Students: see the questions sent with a code, and any answers.
+  // POST keeps the code out of URLs and server logs.
+  app.post('/api/my-questions', (req, res) => {
+    if (lookupLimiter.isLimited(req.ip)) {
+      return res.status(429).json({ error: 'Too many codes were tried from this connection. Please wait 15 minutes and try again.' });
+    }
+    const code = normalizeCode(req.body?.code);
+    if (!code) {
+      lookupLimiter.hit(req.ip);
+      return res.status(400).json({ error: "That isn't a question code. Codes have 12 letters and numbers, like K7QF-2MXP-9TQA." });
+    }
+    const codeHash = hashCode(code);
+    const questions = store.list().filter((q) => q.codeHash === codeHash).map(forStudent);
+    if (!questions.length) lookupLimiter.hit(req.ip);
+    res.json({ code: formatCode(code), questions });
   });
 
   app.get('/api/session', (req, res) => {
@@ -96,15 +122,16 @@ export function createApp({ dataFile, teacherPassword, sessionSecret, trustProxy
   });
 
   app.get('/api/questions', requireTeacher, (req, res) => {
-    res.json({ questions: store.list() });
+    res.json({ questions: store.list().map(forTeacher) });
   });
 
+  // Teachers: write or remove an answer, or change a question's status.
   app.patch('/api/questions/:id', requireTeacher, (req, res) => {
-    const status = req.body?.status;
-    if (!STATUSES.includes(status)) return res.status(400).json({ error: 'Unknown status.' });
-    const question = store.update(req.params.id, { status });
+    const { value, error } = parseTeacherUpdate(req.body ?? {});
+    if (error) return res.status(400).json({ error });
+    const question = store.update(req.params.id, value);
     if (!question) return res.status(404).json({ error: 'That question no longer exists.' });
-    res.json({ question });
+    res.json({ question: forTeacher(question) });
   });
 
   app.delete('/api/questions/:id', requireTeacher, (req, res) => {
@@ -132,6 +159,45 @@ function parseSubmission(body) {
   if (!isTopic(body.topic)) return { error: 'Please choose a topic.' };
   value.topic = body.topic;
   return { value };
+}
+
+// A teacher can send { answer, answeredBy } to answer (an empty answer removes
+// it), or { status } to mark a question answered without writing anything,
+// for example when they answered in class.
+function parseTeacherUpdate(body) {
+  if ('answer' in body) {
+    const { answer, answeredBy = '' } = body;
+    if (typeof answer !== 'string' || typeof answeredBy !== 'string') return { error: 'The answer must be text.' };
+    const text = answer.trim();
+    const by = answeredBy.trim();
+    if (text.length > ANSWER_MAX) return { error: `The answer is too long (the limit is ${ANSWER_MAX} characters).` };
+    if (by.length > ANSWERED_BY_MAX) return { error: `The name is too long (the limit is ${ANSWERED_BY_MAX} characters).` };
+    if (!text) return { value: UNANSWERED };
+    return { value: { status: 'answered', answer: text, answeredBy: by, answeredAt: new Date().toISOString() } };
+  }
+  if (body.status === 'answered') return { value: { status: 'answered', answeredAt: new Date().toISOString() } };
+  if (body.status === 'new') return { value: UNANSWERED };
+  return { error: 'Unknown status.' };
+}
+
+// Teachers see everything except the hashed student code.
+function forTeacher({ codeHash, ...question }) {
+  return { answer: '', answeredBy: '', answeredAt: null, ...question };
+}
+
+// Students see their own question and the answer, nothing else.
+function forStudent(q) {
+  return {
+    id: q.id,
+    createdAt: q.createdAt,
+    topic: q.topic,
+    question: q.question,
+    source: q.source,
+    status: q.status,
+    answer: q.answer ?? '',
+    answeredBy: q.answeredBy ?? '',
+    answeredAt: q.answeredAt ?? null,
+  };
 }
 
 function securityHeaders(req, res, next) {

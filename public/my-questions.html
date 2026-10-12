@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>My Questions · Torah Tech</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <script src="question-code.js" defer></script>
+  <script src="my-questions.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8"/><path d="M16 10.5c-1.9-1.6-4.6-2.4-8-2.4H6.5v14.6H8c3.4 0 6.1.8 8 2.4 1.9-1.6 4.6-2.4 8-2.4h1.5V8.1H24c-3.4 0-6.1.8-8 2.4zM16 10.5v14.6"/></svg>
+      <span>Torah Tech</span>
+    </a>
+    <nav>
+      <a href="/">Ask a question</a>
+      <a href="/my-questions" aria-current="page">My questions</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="intro">
+      <p class="eyebrow">Student question box</p>
+      <h1>My questions</h1>
+      <p class="lede">The questions you've sent, and your teachers' answers.</p>
+    </section>
+
+    <section id="code-card" class="code-card" hidden>
+      <div class="code-box">
+        <p class="code-label">Your question code</p>
+        <p id="code-value" class="code"></p>
+        <p class="hint">Use it to see your answers on another phone or computer.</p>
+      </div>
+      <div class="code-actions">
+        <button type="button" id="copy-code" class="button small">Copy code</button>
+        <button type="button" id="forget-code" class="button small">Forget on this device</button>
+      </div>
+    </section>
+
+    <form id="code-form" class="card" hidden>
+      <h2>Find your questions</h2>
+      <p class="form-intro">Type the question code you got after sending a question.</p>
+      <div class="field">
+        <label for="code-input">Question code</label>
+        <input id="code-input" name="code" required autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="e.g. K7QF-2MXP-9TQA">
+      </div>
+      <p id="code-error" class="form-error" role="alert" hidden></p>
+      <button type="submit" class="button primary">Show my questions</button>
+      <p class="form-note">Haven't asked anything yet? <a href="/">Ask a question</a> and you'll get a code.</p>
+    </form>
+
+    <p id="list-error" class="form-error" role="alert" hidden></p>
+    <ol id="my-list" class="question-list"></ol>
+    <p id="my-empty" class="empty" hidden></p>
+  </main>
+
+  <template id="my-question-template">
+    <li class="question">
+      <div class="question-meta">
+        <span class="chip"></span>
+        <time></time>
+        <span class="status"></span>
+      </div>
+      <p class="question-text" dir="auto"></p>
+      <p class="question-source" dir="auto"></p>
+      <div class="answer" hidden>
+        <p class="answer-label"></p>
+        <p class="answer-text" dir="auto"></p>
+      </div>
+      <p class="answer-note"></p>
+    </li>
+  </template>
+
+  <footer class="site-footer">
+    Torah Tech · Only you and your teachers can see your questions. · <a href="/teachers">Teacher sign-in</a>
+  </footer>
+</body>
+</html>

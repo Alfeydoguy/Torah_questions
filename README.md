@@ -1,15 +1,35 @@
 # Torah Tech Questions
 
 A question box for Torah Tech. Students send questions on halacha and Torah,
-and teachers read them on a private question board.
+teachers answer them on a private question board, and students read the
+answers on their own page.
 
-- **Students** (`/`): pick a topic, type a question in English or Hebrew, and
-  optionally add where it came up, their name, and their class. Leaving the
-  name blank sends the question anonymously.
+- **Ask a question** (`/`): students pick a topic, type a question in English
+  or Hebrew, and optionally add where it came up, their name, and their
+  class. Leaving the name blank sends the question anonymously.
+- **My questions** (`/my-questions`): every question a student sends, with
+  its status and the teacher's answer. A badge on the ask page shows when
+  new answers come in.
 - **Teachers** (`/teachers`): sign in with the teacher password to see every
-  question, newest first. Filter by topic, search, mark questions answered,
-  and delete ones you don't need. The board checks for new questions every
-  minute.
+  question, newest first. Write an answer (signed with your name if you
+  like), mark a question answered without writing one if you answered it in
+  class, filter by topic, search, and delete questions. The board checks for
+  new questions every minute.
+
+### How students find their answers
+
+There are no student accounts. The first time a student sends a question,
+they get a **question code** like `K7QF-2MXP-9TQA`. Their device remembers
+it, and every question they send from that device uses the same code, so
+My questions shows all of them, anonymous ones included.
+
+To see their answers on another phone or computer, a student types the code
+on My questions. On a shared computer, they can click **Start fresh** on the
+ask page, or **Forget on this device** on My questions, so the next student
+gets their own code.
+
+The server saves only a scrambled (hashed) form of each code, so codes can't
+be read from the data file.
 
 ## Running it
 

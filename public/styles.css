@@ -11,6 +11,7 @@
   --on-primary: #ffffff;
   --gold: #a8741f;
   --gold-soft: #e9c77b;
+  --on-gold: #ffffff;
   --halacha-bg: #e4ebf7;
   --halacha-text: #1f3a68;
   --torah-bg: #f6e8cc;
@@ -42,6 +43,7 @@
     --primary-hover: #a9c3f2;
     --on-primary: #111723;
     --gold: #e0b45f;
+    --on-gold: #1d1606;
     --halacha-bg: #22324f;
     --halacha-text: #b9cdf3;
     --torah-bg: #3d3020;
@@ -105,6 +107,7 @@ a { color: var(--primary); }
 
 .site-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
@@ -137,13 +140,40 @@ a { color: var(--primary); }
 
 .site-header nav {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 18px;
+  gap: 8px 18px;
   font-size: 0.95rem;
 }
 
-.site-header nav a { color: var(--text-muted); text-decoration: none; font-weight: 500; }
+.site-header nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+}
 .site-header nav a:hover { color: var(--text); }
+.site-header nav a[aria-current="page"] {
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: inset 0 -2px var(--gold);
+}
+
+.nav-badge {
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--on-gold);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
 
 .link-button {
   border: 0;
@@ -163,6 +193,7 @@ a { color: var(--primary); }
   color: var(--text-muted);
   font-size: 0.875rem;
 }
+.site-footer a { color: inherit; }
 
 /* Page layout */
 
@@ -267,6 +298,25 @@ input:focus, select:focus, textarea:focus {
   overflow: hidden;
 }
 
+.form-intro { margin: 6px 0 20px; color: var(--text-muted); }
+
+.form-note {
+  margin: 16px 0 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  text-align: center;
+}
+.form-note .link-button { color: var(--primary); text-decoration: underline; }
+
+.notice {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--success-bg);
+  color: var(--success);
+  font-weight: 500;
+}
+
 .form-error {
   margin: 0 0 16px;
   padding: 10px 14px;
@@ -319,7 +369,57 @@ input:focus, select:focus, textarea:focus {
 
 .thanks { text-align: center; padding: 40px 28px; }
 .thanks:focus { outline: none; }
-.thanks p { margin: 10px 0 24px; color: var(--text-muted); }
+.thanks > p { margin: 10px 0 24px; color: var(--text-muted); }
+.thanks .code-box { margin-bottom: 24px; }
+
+.thanks-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Question code */
+
+.code-box {
+  padding: 16px 18px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-muted);
+}
+.code-box p { margin: 0; }
+.code-box .hint { margin-top: 6px; }
+
+.code-label {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.code {
+  margin: 4px 0 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.code-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  margin-bottom: 24px;
+}
+.code-card .code-box { flex: 1 1 280px; min-width: 0; }
+.code-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+#code-form h2 { font-size: 1.5rem; }
 
 .thanks-icon {
   width: 52px;
@@ -463,6 +563,12 @@ input:focus, select:focus, textarea:focus {
   color: var(--gold);
 }
 .is-answered .status { color: var(--success); }
+.question .status.status-fresh {
+  padding: 1px 10px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--on-gold);
+}
 
 .question-text {
   margin: 0;
@@ -478,6 +584,58 @@ input:focus, select:focus, textarea:focus {
   font-style: italic;
   overflow-wrap: anywhere;
 }
+
+.answer {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--success-bg);
+}
+
+.answer-label {
+  margin: 0 0 6px;
+  color: var(--success);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.answer-text {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.answer-note {
+  margin: 12px 0 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.answer-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.answer-form label { margin: 0; }
+.answer-form label > span:first-child { display: block; margin-bottom: 6px; }
+.answer-form textarea, .answer-form input { font-weight: 400; }
+.answer-form textarea { min-height: 120px; }
+.answer-form .hint, .answer-form .form-error { margin: 0; }
+
+.answer-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.answer-form-actions .remove-answer { margin-right: auto; }
+
+.link-button.danger-link { color: var(--danger); }
+.link-button.danger-link:hover { text-decoration: underline; }
 
 .question-foot {
   display: flex;

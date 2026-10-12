@@ -64,6 +64,7 @@
       </div>
 
       <p id="board-error" class="form-error" role="alert" hidden></p>
+      <p id="board-notice" class="notice" role="status" hidden></p>
       <ol id="question-list" class="question-list"></ol>
       <p id="empty" class="empty" hidden></p>
       <p id="updated" class="updated" aria-live="polite"></p>
@@ -79,9 +80,31 @@
       </div>
       <p class="question-text" dir="auto"></p>
       <p class="question-source" dir="auto"></p>
+      <div class="answer" hidden>
+        <p class="answer-label"></p>
+        <p class="answer-text" dir="auto"></p>
+      </div>
+      <form class="answer-form" hidden>
+        <label>
+          <span>Your answer</span>
+          <textarea name="answer" rows="5" maxlength="6000" required dir="auto" placeholder="Write your answer in English or Hebrew"></textarea>
+        </label>
+        <label>
+          <span>Sign it <span class="optional">Optional</span></span>
+          <input name="answeredBy" maxlength="80" dir="auto" placeholder="e.g. Rabbi Levi">
+        </label>
+        <p class="hint">The student sees this answer on their My questions page, even if they asked anonymously.</p>
+        <p class="form-error" role="alert" hidden></p>
+        <div class="answer-form-actions">
+          <button type="button" class="link-button danger-link remove-answer" hidden>Remove answer</button>
+          <button type="button" class="button small cancel">Cancel</button>
+          <button type="submit" class="button small primary">Send answer</button>
+        </div>
+      </form>
       <div class="question-foot">
         <span class="asker" dir="auto"></span>
         <div class="actions">
+          <button type="button" class="button small primary answer-button"></button>
           <button type="button" class="button small toggle"></button>
           <button type="button" class="button small danger delete">Delete</button>
         </div>

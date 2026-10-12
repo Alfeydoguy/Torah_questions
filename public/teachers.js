@@ -14,6 +14,7 @@ const els = {
   list: document.getElementById('question-list'),
   empty: document.getElementById('empty'),
   updated: document.getElementById('updated'),
+  notice: document.getElementById('board-notice'),
   template: document.getElementById('question-template'),
 };
 
@@ -23,6 +24,18 @@ const state = {
   status: 'new',
   topic: '',
   search: '',
+  // Answers being written, by question id, so a refresh doesn't lose them.
+  drafts: new Map(),
+};
+
+// Remembers how this teacher signs their answers.
+const teacherName = {
+  get() {
+    try { return localStorage.getItem('torahTech.teacherName') ?? ''; } catch { return ''; }
+  },
+  set(name) {
+    try { localStorage.setItem('torahTech.teacherName', name); } catch {}
+  },
 };
 
 const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' });
@@ -50,11 +63,22 @@ function showMessage(el, message) {
   el.hidden = !message;
 }
 
+function errorText(err) {
+  return err instanceof TypeError
+    ? "Couldn't reach the server. Check your internet connection."
+    : err.message;
+}
+
 function reportError(err) {
   if (err instanceof SignedOutError) return;
-  showMessage(els.boardError, err instanceof TypeError
-    ? "Couldn't reach the server. Check your internet connection."
-    : err.message);
+  showMessage(els.boardError, errorText(err));
+}
+
+let noticeTimer;
+function showNotice(message) {
+  showMessage(els.notice, message);
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => showMessage(els.notice, ''), 5000);
 }
 
 function showLogin() {
@@ -100,7 +124,7 @@ function matches(question) {
   if (state.status !== 'all' && question.status !== state.status) return false;
   if (state.topic && question.topic !== state.topic) return false;
   if (state.search) {
-    const haystack = [question.question, question.source, question.name, question.className].join(' ').toLowerCase();
+    const haystack = [question.question, question.source, question.name, question.className, question.answer].join(' ').toLowerCase();
     if (!haystack.includes(state.search)) return false;
   }
   return true;
@@ -155,9 +179,24 @@ function renderQuestion(question) {
   asker.textContent = [question.name || 'Anonymous', question.className].filter(Boolean).join(' · ');
   asker.classList.toggle('is-anonymous', !question.name);
 
+  if (question.answer) {
+    item.querySelector('.answer').hidden = false;
+    item.querySelector('.answer-label').textContent = answerLabel(question);
+    item.querySelector('.answer-text').textContent = question.answer;
+  }
+
+  const answerButton = item.querySelector('.answer-button');
+  answerButton.textContent = question.answer ? 'Edit answer' : 'Write answer';
+  answerButton.classList.toggle('primary', !question.answer);
+
+  // A written answer is removed from the answer form, so this button is only
+  // for questions answered in class or not answered yet.
   const toggle = item.querySelector('.toggle');
+  toggle.hidden = Boolean(question.answer);
   toggle.textContent = answered ? 'Move back to new' : 'Mark answered';
   toggle.addEventListener('click', () => setStatus(question, answered ? 'new' : 'answered', toggle));
+
+  setUpAnswerForm(item, question, answerButton);
 
   // Deleting can't be undone, so ask on the card before doing it.
   const actions = item.querySelector('.actions');
@@ -177,6 +216,67 @@ function renderQuestion(question) {
   confirmDelete.addEventListener('click', () => deleteQuestion(question, confirmDelete));
 
   return item;
+}
+
+function answerLabel(question) {
+  const by = question.answeredBy ? ` from ${question.answeredBy}` : '';
+  const when = question.answeredAt ? ` · ${dateFormat.format(new Date(question.answeredAt))}` : '';
+  return `Answer${by}${when}`;
+}
+
+function setUpAnswerForm(item, question, answerButton) {
+  const form = item.querySelector('.answer-form');
+  const error = form.querySelector('.form-error');
+  const removeButton = form.querySelector('.remove-answer');
+
+  function open(draft) {
+    form.answer.value = draft.answer;
+    form.answeredBy.value = draft.answeredBy;
+    form.hidden = false;
+    item.querySelector('.answer').hidden = true;
+    item.querySelector('.actions').hidden = true;
+    removeButton.hidden = !question.answer;
+  }
+
+  answerButton.addEventListener('click', () => {
+    const draft = { answer: question.answer, answeredBy: question.answeredBy || teacherName.get() };
+    state.drafts.set(question.id, draft);
+    open(draft);
+    form.answer.focus();
+  });
+  form.addEventListener('input', () => {
+    state.drafts.set(question.id, { answer: form.answer.value, answeredBy: form.answeredBy.value });
+  });
+  form.querySelector('.cancel').addEventListener('click', () => {
+    state.drafts.delete(question.id);
+    render();
+  });
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    saveAnswer(question, { answer: form.answer.value, answeredBy: form.answeredBy.value }, form, error);
+  });
+  removeButton.addEventListener('click', () => saveAnswer(question, { answer: '' }, form, error));
+
+  if (state.drafts.has(question.id)) open(state.drafts.get(question.id));
+}
+
+async function saveAnswer(question, body, form, error) {
+  const buttons = form.querySelectorAll('button');
+  for (const button of buttons) button.disabled = true;
+  showMessage(error, '');
+  try {
+    const { question: updated } = await api(`/api/questions/${question.id}`, { method: 'PATCH', body });
+    if (body.answeredBy !== undefined) teacherName.set(body.answeredBy.trim());
+    Object.assign(question, updated);
+    state.drafts.delete(question.id);
+    render();
+    if (!matches(question)) {
+      showNotice(updated.answer ? 'Answer sent. The question moved to Answered.' : 'Answer removed. The question moved back to New.');
+    }
+  } catch (err) {
+    for (const button of buttons) button.disabled = false;
+    if (!(err instanceof SignedOutError)) showMessage(error, errorText(err));
+  }
 }
 
 async function setStatus(question, status, button) {
@@ -213,9 +313,7 @@ els.loginForm.addEventListener('submit', async (event) => {
     els.loginForm.reset();
     await showBoard();
   } catch (err) {
-    showMessage(els.loginError, err instanceof TypeError
-      ? "Couldn't reach the server. Check your internet connection."
-      : err.message);
+    showMessage(els.loginError, errorText(err));
   } finally {
     button.disabled = false;
   }
@@ -224,6 +322,7 @@ els.loginForm.addEventListener('submit', async (event) => {
 els.logout.addEventListener('click', async () => {
   await api('/api/logout', { method: 'POST' }).catch(() => {});
   state.questions = [];
+  state.drafts.clear();
   showLogin();
 });
 
@@ -246,10 +345,14 @@ els.search.addEventListener('input', () => {
   render();
 });
 
-// Check for new questions every minute while the board is open on screen.
-setInterval(() => {
-  if (!els.board.hidden && document.visibilityState === 'visible') loadQuestions();
-}, REFRESH_MS);
+// Check for new questions every minute while the board is on screen, and
+// when the teacher comes back to the tab. Skip it while an answer is being
+// written so the text box doesn't lose focus mid-sentence.
+function refreshIfIdle() {
+  if (!els.board.hidden && document.visibilityState === 'visible' && !state.drafts.size) loadQuestions();
+}
+setInterval(refreshIfIdle, REFRESH_MS);
+document.addEventListener('visibilitychange', refreshIfIdle);
 
 async function start() {
   try {
