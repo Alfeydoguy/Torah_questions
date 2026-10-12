@@ -89,7 +89,7 @@ document.getElementById('ask-another').addEventListener('click', () => {
 });
 
 // On a shared computer, the next student starts with their own code.
-document.getElementById('forget-code').addEventListener('click', () => {
+document.getElementById('start-fresh').addEventListener('click', () => {
   questionCode.forget();
   document.getElementById('name').value = '';
   document.getElementById('className').value = '';
