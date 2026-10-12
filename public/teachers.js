@@ -159,8 +159,22 @@ function renderQuestion(question) {
   toggle.textContent = answered ? 'Move back to new' : 'Mark answered';
   toggle.addEventListener('click', () => setStatus(question, answered ? 'new' : 'answered', toggle));
 
+  // Deleting can't be undone, so ask on the card before doing it.
+  const actions = item.querySelector('.actions');
+  const confirmBox = item.querySelector('.confirm-delete');
   const del = item.querySelector('.delete');
-  del.addEventListener('click', () => deleteQuestion(question, del));
+  const confirmDelete = confirmBox.querySelector('.confirm');
+  del.addEventListener('click', () => {
+    actions.hidden = true;
+    confirmBox.hidden = false;
+    confirmDelete.focus();
+  });
+  confirmBox.querySelector('.keep').addEventListener('click', () => {
+    confirmBox.hidden = true;
+    actions.hidden = false;
+    del.focus();
+  });
+  confirmDelete.addEventListener('click', () => deleteQuestion(question, confirmDelete));
 
   return item;
 }
@@ -178,7 +192,6 @@ async function setStatus(question, status, button) {
 }
 
 async function deleteQuestion(question, button) {
-  if (!confirm("Delete this question? This can't be undone.")) return;
   button.disabled = true;
   try {
     await api(`/api/questions/${question.id}`, { method: 'DELETE' });
